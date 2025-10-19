@@ -1,0 +1,277 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Thiệp 20/10 - Dolphin chúc mừng</title>
+<style>
+  body {
+    margin: 0;
+    background-color: #800020;
+    overflow: hidden;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  h1 {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 42px;
+    animation: colorChange 1s infinite alternate;
+    color: #ffccff;
+    text-shadow: 2px 2px 10px #ff6699;
+    line-height: 1.5;
+  }
+
+  @keyframes colorChange {
+    0% { color: #ffccff; }
+    25% { color: #ffff66; }
+    50% { color: #66ff66; }
+    75% { color: #66ccff; }
+    100% { color: #ff99cc; }
+  }
+
+  .images {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 20px;
+    margin-top: 40px;
+  }
+
+  .images img {
+    width: 240px;
+    height: 240px;
+    border-radius: 20px;
+    object-fit: cover;
+    box-shadow: 0 0 30px rgba(255,200,255,0.8);
+  }
+
+  .images img:nth-child(2) {
+    transform: translateY(-40px); /* hình giữa cao hơn */
+  }
+
+  canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+  }
+
+  button {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    font-size: 18px;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+
+<h1>
+  Dolphin chúc mừng Quốc tế phụ nữ, chức mừng mẹ Ngọc và các dì 💐<br>
+  Dolphin đang cảm thấy rất là happy
+</h1>
+
+<div class="images">
+  <img src="be1.png">
+  <img src="be2.png">
+  <img src="be3.png">
+</div>
+
+<canvas id="canvas"></canvas>
+
+<audio id="music" loop>
+  <source src="Ấn Nút Nhớ... Thả Giấc Mơ.mp3" type="audio/mpeg">
+</audio>
+<button id="playMusic">Nhấn để bật nhạc 🎵</button>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+// --- Nhạc ---
+const music = document.getElementById('music');
+document.getElementById('playMusic').addEventListener('click', ()=>{
+  music.play();
+  document.getElementById('playMusic').style.display='none';
+});
+
+// --- Cá heo vẽ giống thật ---
+class Dolphin {
+  constructor(x, y, size, speed, direction){
+    this.x = x;
+    this.y = y;
+    this.size = size;
+    this.speed = speed;
+    this.direction = direction;
+    this.tailAngle = 0;
+  }
+  draw(){
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.scale(this.direction,1);
+
+    // thân cá
+    ctx.beginPath();
+    ctx.moveTo(-this.size, 0);
+    ctx.quadraticCurveTo(-this.size/2, -this.size/2, this.size, -this.size/4);
+    ctx.quadraticCurveTo(this.size*1.2, 0, this.size, this.size/4);
+    ctx.quadraticCurveTo(-this.size/2, this.size/2, -this.size, 0);
+    ctx.fillStyle = '#70c1b3';
+    ctx.fill();
+
+    // vây lưng
+    ctx.beginPath();
+    ctx.moveTo(0, -this.size/2);
+    ctx.lineTo(this.size/4, -this.size);
+    ctx.lineTo(this.size/2, -this.size/2);
+    ctx.closePath();
+    ctx.fillStyle = '#1b6ca8';
+    ctx.fill();
+
+    // vây dưới
+    ctx.beginPath();
+    ctx.moveTo(0, this.size/2);
+    ctx.lineTo(this.size/5, this.size*0.8);
+    ctx.lineTo(this.size/2, this.size/2);
+    ctx.closePath();
+    ctx.fillStyle = '#1b6ca8';
+    ctx.fill();
+
+    // đuôi
+    ctx.save();
+    ctx.translate(-this.size,0);
+    ctx.rotate(Math.sin(this.tailAngle)*0.5);
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.lineTo(-this.size/2,-this.size/3);
+    ctx.lineTo(-this.size/2,this.size/3);
+    ctx.closePath();
+    ctx.fillStyle = '#1b6ca8';
+    ctx.fill();
+    ctx.restore();
+
+    // mắt
+    ctx.beginPath();
+    ctx.arc(this.size*0.6,-this.size/10,this.size/10,0,Math.PI*2);
+    ctx.fillStyle='black';
+    ctx.fill();
+
+    ctx.restore();
+  }
+  update(){
+    this.x += this.speed*this.direction;
+    this.y += Math.sin(this.x/50)*2;
+    this.tailAngle += 0.2;
+    if(this.x > canvas.width+50) this.x = -50;
+    if(this.x < -50) this.x = canvas.width+50;
+  }
+}
+
+// Khởi tạo cá heo
+const dolphins = [
+  new Dolphin(100, canvas.height*0.6, 40, 2, 1),
+  new Dolphin(canvas.width-100, canvas.height*0.5, 40, 3, -1)
+];
+
+// --- Trái tim bay ---
+const hearts = [];
+function createHeart(){
+  hearts.push({
+    x: Math.random()*canvas.width,
+    y: canvas.height,
+    size: 10+Math.random()*20,
+    speed: 1+Math.random()*2
+  });
+}
+setInterval(createHeart,500);
+
+// --- Hoa rơi ---
+const flowers = [];
+for(let i=0;i<20;i++){
+  flowers.push({
+    x: Math.random()*canvas.width,
+    y: -50-Math.random()*canvas.height,
+    size: 16+Math.random()*20,
+    speed: 1+Math.random()*2
+  });
+}
+
+// --- Pháo hoa ---
+const fireworks = [];
+function createFirework(){
+  let x = Math.random()*canvas.width;
+  let y = Math.random()*canvas.height/2;
+  for(let i=0;i<30;i++){
+    fireworks.push({
+      x, y,
+      angle: Math.random()*2*Math.PI,
+      speed: 2+Math.random()*4,
+      life: 0,
+      color: `hsl(${Math.random()*360},100%,60%)`
+    });
+  }
+}
+setInterval(createFirework,800);
+
+// --- Animate ---
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // Cá heo
+  dolphins.forEach(d=>{
+    d.update();
+    d.draw();
+  });
+
+  // Trái tim
+  hearts.forEach((h,i)=>{
+    h.y -= h.speed;
+    ctx.fillStyle = 'pink';
+    ctx.beginPath();
+    ctx.moveTo(h.x, h.y);
+    ctx.bezierCurveTo(h.x-h.size,h.y-h.size,h.x-2*h.size,h.y+h.size,h.x,h.y+1.5*h.size);
+    ctx.bezierCurveTo(h.x+2*h.size,h.y+h.size,h.x+h.size,h.y-h.size,h.x,h.y);
+    ctx.fill();
+    if(h.y<-50) hearts.splice(i,1);
+  });
+
+  // Hoa rơi
+  flowers.forEach(f=>{
+    f.y += f.speed;
+    ctx.fillStyle = 'pink';
+    ctx.font = f.size+'px serif';
+    ctx.fillText('🌸',f.x,f.y);
+    if(f.y>canvas.height+50) f.y=-50;
+  });
+
+  // Pháo hoa
+  fireworks.forEach((f,i)=>{
+    f.x += Math.cos(f.angle)*f.speed;
+    f.y += Math.sin(f.angle)*f.speed +0.5;
+    f.life++;
+    ctx.fillStyle = f.color;
+    ctx.beginPath();
+    ctx.arc(f.x,f.y,2,0,Math.PI*2);
+    ctx.fill();
+    if(f.life>50) fireworks.splice(i,1);
+  });
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>
